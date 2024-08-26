@@ -1,6 +1,7 @@
 package com.mindex.challenge.service.impl;
 
 import com.mindex.challenge.data.Employee;
+import com.mindex.challenge.data.ReportingStructure;
 import com.mindex.challenge.service.EmployeeService;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -24,6 +27,8 @@ public class EmployeeServiceImplTest {
 
     private String employeeUrl;
     private String employeeIdUrl;
+
+    private String reportingStructureUrl;
 
     @Autowired
     private EmployeeService employeeService;
@@ -38,15 +43,12 @@ public class EmployeeServiceImplTest {
     public void setup() {
         employeeUrl = "http://localhost:" + port + "/employee";
         employeeIdUrl = "http://localhost:" + port + "/employee/{id}";
+        reportingStructureUrl = "http://localhost:" + port + "/employee/reporting-structure/{id}";
     }
 
     @Test
     public void testCreateReadUpdate() {
-        Employee testEmployee = new Employee();
-        testEmployee.setFirstName("John");
-        testEmployee.setLastName("Doe");
-        testEmployee.setDepartment("Engineering");
-        testEmployee.setPosition("Developer");
+        Employee testEmployee = createTestEmployee("John", "Doe", "Engineering", "Developer");
 
         // Create checks
         Employee createdEmployee = restTemplate.postForEntity(employeeUrl, testEmployee, Employee.class).getBody();
@@ -77,10 +79,55 @@ public class EmployeeServiceImplTest {
         assertEmployeeEquivalence(readEmployee, updatedEmployee);
     }
 
+    @Test
+    public void testReportingStructure() {
+        // Create test employees
+        Employee employee1 = createTestEmployee("John", "Doe", "Engineering","Manager");
+        Employee employee2 = createTestEmployee("Jane", "Smith", "Engineering", "Developer");
+        Employee employee3 = createTestEmployee("Bob", "Johnson", "Engineering","Developer");
+
+        // Set up reporting structure
+        employee1.setDirectReports(Arrays.asList(employee2, employee3));
+        employeeService.update(employee1);
+
+        // Test reporting structure for employee1
+        ReportingStructure reportingStructure = restTemplate.getForEntity(reportingStructureUrl, ReportingStructure.class, employee1.getEmployeeId()).getBody();
+
+        assertNotNull(reportingStructure);
+        assertEquals(employee1.getEmployeeId(), reportingStructure.getEmployee().getEmployeeId());
+        assertEquals(2, reportingStructure.getNumberOfReports());
+    }
+
+    @Test
+    public void testReportingStructureNoReporters() {
+        // Create test employees
+        Employee employee1 = createTestEmployee("John", "Doe", "Engineering","Manager");
+        Employee employee2 = createTestEmployee("Jane", "Smith", "Engineering", "Developer");
+        Employee employee3 = createTestEmployee("Bob", "Johnson", "Engineering","Developer");
+
+        // Set up reporting structure
+        employee1.setDirectReports(Arrays.asList(employee2, employee3));
+        employeeService.update(employee1);
+
+        // Test reporting structure for employee2 (no direct reports)
+        ReportingStructure reportingStructure = restTemplate.getForEntity(reportingStructureUrl, ReportingStructure.class, employee2.getEmployeeId()).getBody();
+
+        assertEquals(0, reportingStructure.getNumberOfReports());
+    }
+
     private static void assertEmployeeEquivalence(Employee expected, Employee actual) {
         assertEquals(expected.getFirstName(), actual.getFirstName());
         assertEquals(expected.getLastName(), actual.getLastName());
         assertEquals(expected.getDepartment(), actual.getDepartment());
         assertEquals(expected.getPosition(), actual.getPosition());
+    }
+
+    private Employee createTestEmployee(String firstName, String lastName, String department, String position) {
+        Employee employee = new Employee();
+        employee.setFirstName(firstName);
+        employee.setLastName(lastName);
+        employee.setPosition(position);
+        employee.setDepartment(department);
+        return employeeService.create(employee);
     }
 }

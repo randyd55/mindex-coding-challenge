@@ -80,11 +80,23 @@ public class EmployeeServiceImplTest {
     }
 
     @Test
-    public void testReportingStructure() {
+    public void testReadReportingStructure() {
+        Employee employee1 = employeeService.read("16a596ae-edd3-4847-99fe-c4518e82c86f");
+
+        // Test reporting structure for employee1
+        ReportingStructure reportingStructure = restTemplate.getForEntity(reportingStructureUrl, ReportingStructure.class, employee1.getEmployeeId()).getBody();
+
+        assertNotNull(reportingStructure);
+        assertEquals(employee1.getEmployeeId(), reportingStructure.getEmployee().getEmployeeId());
+        assertEquals(4, reportingStructure.getNumberOfReports());
+    }
+
+    @Test
+    public void testCreateReportingStructure() {
         // Create test employees
-        Employee employee1 = createTestEmployee("John", "Doe", "Engineering","Manager");
-        Employee employee2 = createTestEmployee("Jane", "Smith", "Engineering", "Developer");
-        Employee employee3 = createTestEmployee("Bob", "Johnson", "Engineering","Developer");
+        Employee employee1 = createTestEmployee("Eleanor", "Rigby", "Engineering","Manager");
+        Employee employee2 = createTestEmployee("Mister", "Kite", "Engineering", "Developer");
+        Employee employee3 = createTestEmployee("Penny", "Lane", "Engineering","Developer");
 
         // Set up reporting structure
         employee1.setDirectReports(Arrays.asList(employee2, employee3));
@@ -101,9 +113,9 @@ public class EmployeeServiceImplTest {
     @Test
     public void testReportingStructureNoReporters() {
         // Create test employees
-        Employee employee1 = createTestEmployee("John", "Doe", "Engineering","Manager");
-        Employee employee2 = createTestEmployee("Jane", "Smith", "Engineering", "Developer");
-        Employee employee3 = createTestEmployee("Bob", "Johnson", "Engineering","Developer");
+        Employee employee1 = createTestEmployee("Eleanor", "Rigby", "Engineering","Manager");
+        Employee employee2 = createTestEmployee("Mister", "Kite", "Engineering", "Developer");
+        Employee employee3 = createTestEmployee("Penny", "Lane", "Engineering","Developer");
 
         // Set up reporting structure
         employee1.setDirectReports(Arrays.asList(employee2, employee3));

@@ -64,7 +64,7 @@ public class CompensationServiceImplTest {
         assertCompensationEquivalence(createdCompensation, readCompensation);
     }
 
-
+    /* Helper method to instantiate an Employee object for testing */
     private Employee createTestEmployee(String firstName, String lastName, String position, String department) {
         Employee employee = new Employee();
         employee.setFirstName(firstName);
@@ -74,6 +74,9 @@ public class CompensationServiceImplTest {
         return employeeService.create(employee);
     }
 
+    /* Tests the equality of two compensation objects based on the Employee field's employeeId value, the salary field,
+        and the effective date field
+     */
     private void assertCompensationEquivalence(Compensation expected, Compensation actual) {
         assertEquals(expected.getEmployee().getEmployeeId(), actual.getEmployee().getEmployeeId());
         assertEquals(expected.getSalary(), actual.getSalary(), 0.001);

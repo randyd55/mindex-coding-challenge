@@ -45,7 +45,7 @@ public class CompensationServiceImplTest {
     @Test
     public void testCreateReadCompensation() {
         // Create test employee
-        Employee testEmployee = createTestEmployee("John", "Doe", "Manager", "Engineering");
+        Employee testEmployee = createTestEmployee("Yoko", "Ono", "Manager", "Engineering");
 
         // Create test compensation
         Compensation testCompensation = new Compensation(testEmployee, 100000.00, LocalDate.now());
